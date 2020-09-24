@@ -4,6 +4,131 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      #genre {
+        display: none;
+      }
+      #difficulty {
+        display: none;
+      }
+      #home-btn {
+        display: none;
+      }
+      .choice-btn {
+        display: block;
+        margin-bottom: 5px;
+      }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <h1 id="title">ようこそ</h1>
+    <h3 id="genre"></h3>
+    <h3 id="difficulty"></h3>
+    <hr />
+    <p id="question-text">以下のボタンをクリック</p>
+    <hr />
+    <button id="start-btn">開始</button>
+    <button id="home-btn">ホームに戻る</button>
+    <div id="choice-area"></div>
+    <script>
+      "use strict";
+
+      //DOMから要素取得
+      const title = document.getElementById("title");
+      const genre = document.getElementById("genre");
+      const difficulty = document.getElementById("difficulty");
+      const questionText = document.getElementById("question-text");
+      const startBtn = document.getElementById("start-btn");
+      const choiceArea = document.getElementById("choice-area");
+      const homeBtn = document.getElementById("home-btn");
+      let choiceBtn = document.querySelectorAll(".choice-btn");
+
+      fetch("https://opentdb.com/api.php?amount=10&type=multiple")
+        .then((response) => response.json())
+        .then((json) => {
+          //クイズを表示する
+          function showQuestion(n) {
+            const quizObj = json.results[n];
+            const genreText = quizObj.category;
+            const dificultyText = quizObj.difficulty;
+            const answers = [];
+            const answer = answers.push(quizObj.correct_answer);
+            const choiceAnswers = [...quizObj.incorrect_answers, ...answers];
+            const question = quizObj.question;
+            startBtn.style.display = "none";
+            genre.style.display = "block";
+            difficulty.style.display = "block";
+            title.textContent = "問題" + (n + 1);
+            genre.textContent = "[ジャンル]" + genreText;
+            difficulty.textContent = "[難易度]" + dificultyText;
+            questionText.textContent = question;
+            for (let i = 0; i < choiceAnswers.length; i++) {
+              const choiceBtn = document.createElement("button");
+              choiceBtn.setAttribute("class", "choice-btn " + i);
+              choiceBtn.textContent = choiceAnswers[i];
+              choiceArea.appendChild(choiceBtn);
+            }
+          }
+
+          // //開始ボタンクリックで最初のクイズを表示
+          startBtn.addEventListener("click", () => {
+            title.textContent = "取得中";
+            questionText.textContent = "少々お待ちください";
+            window.setTimeout(function () {
+              showQuestion(0);
+            }, 1000); //１秒後にクイズ表示
+          });
+
+          //選択ボタンクリックで次のクイズを表示
+          const answerBtn = choiceArea.children;
+          const trueCounts = [];
+          let i = 0;
+          choiceArea.addEventListener("click", (e) => {
+            i++;
+            if (e.target.className === "choice-btn 3") {
+              //正解のカウントと次の出題
+              trueCounts.push(1);
+              choiceArea.innerHTML = "";
+              lastAnswer();
+            } else if (e.target.className !== "choice-btn 3") {
+              //次の出題
+              choiceArea.innerHTML = "";
+              lastAnswer();
+            }
+            console.log(trueCounts);
+          });
+
+          //ラストの問題回答したら正答数表示
+          function lastAnswer() {
+            if (i === 10) {
+              title.textContent =
+                "あなたの正答数は" + trueCounts.length + "です";
+              questionText.textContent =
+                "再度チャレンジしたい場合は以下をクリック！！";
+              genre.style.display = "none";
+              difficulty.style.display = "none";
+              homeBtn.style.display = "block";
+              choiceArea.innerHTML = "";
+            } else {
+              showQuestion(i);
+            }
+          }
+
+          //homebtnクリックで最初に戻る
+          homeBtn.addEventListener("click", () => {
+            title.textContent = "ようこそ";
+            questionText.textContent = "以下のボタンをクリック";
+            homeBtn.style.display = "none";
+            startBtn.style.display = "block";
+            i = 0; //カウンターを０にリセット
+            trueCounts.length = 0; //配列を空にする
+          });
+
+          //test
+          console.log(json);
+          console.log(json.results);
+          console.log(json.results[0].question);
+        });
+    </script>
+  </body>
 </html>
