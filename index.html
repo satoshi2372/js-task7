@@ -46,40 +46,60 @@
       fetch("https://opentdb.com/api.php?amount=10&type=multiple")
         .then((response) => response.json())
         .then((json) => {
-          //クイズを表示する
-          function showQuestion(n) {
-            const quizObj = json.results[n];
-            const genreText = quizObj.category;
-            const dificultyText = quizObj.difficulty;
-            const answers = [];
-            const answer = answers.push(quizObj.correct_answer);
-            const choiceAnswers = [...quizObj.incorrect_answers, ...answers];
-            const question = quizObj.question;
-            startBtn.style.display = "none";
-            genre.style.display = "block";
-            difficulty.style.display = "block";
-            title.textContent = "問題" + (n + 1);
-            genre.textContent = "[ジャンル]" + genreText;
-            difficulty.textContent = "[難易度]" + dificultyText;
-            questionText.textContent = question;
-            for (let i = 0; i < choiceAnswers.length; i++) {
-              const choiceBtn = document.createElement("button");
-              choiceBtn.setAttribute("class", "choice-btn " + i);
-              choiceBtn.textContent = choiceAnswers[i];
-              choiceArea.appendChild(choiceBtn);
+          //クラスの設定
+          class Question {
+            constructor(n) {
+              this.dataObj = json.results[n];
+              this.title = `問題 ${n + 1}`;
+              this.genre = `[ジャンル] ${json.results[n].category}`;
+              this.difficultyText = `[難易度] ${json.results[n].difficulty}`;
+              this.text = json.results[n].question;
+            }
+            show() {
+              //クイズを表示させる
+              startBtn.style.display = "none";
+              genre.style.display = "block";
+              difficulty.style.display = "block";
+              title.textContent = this.title;
+              genre.textContent = this.genre;
+              difficulty.textContent = this.difficultyText;
+              questionText.textContent = this.text;
+              const answers = [];
+              const answer = answers.push(this.dataObj.correct_answer);
+              const choiceAnswers = [
+                ...this.dataObj.incorrect_answers,
+                ...answers,
+              ];
+              for (let i = 0; i < choiceAnswers.length; i++) {
+                const choiceBtn = document.createElement("button");
+                choiceBtn.setAttribute("class", "choice-btn " + i);
+                choiceBtn.textContent = choiceAnswers[i];
+                choiceArea.appendChild(choiceBtn);
+              }
             }
           }
 
-          // //開始ボタンクリックで最初のクイズを表示
+          //複数のインスタンス作成し配列としてまとめる
+          function instances() {
+            const Questions = [];
+            for (let i = 0; i < 10; i++) {
+              const instance = new Question(i);
+              Questions.push(instance);
+            }
+            return Questions;
+          }
+          const QuestionInstances = instances();
+          console.log(QuestionInstances);
+          //開始ボタンクリックでクイズを表示
           startBtn.addEventListener("click", () => {
             title.textContent = "取得中";
             questionText.textContent = "少々お待ちください";
             window.setTimeout(function () {
-              showQuestion(0);
+              QuestionInstances[0].show();
             }, 1000); //１秒後にクイズ表示
           });
 
-          //選択ボタンクリックで次のクイズを表示
+          //答え選択ボタンクリックで次のクイズを表示
           const answerBtn = choiceArea.children;
           const trueCounts = [];
           let i = 0;
@@ -95,10 +115,10 @@
               choiceArea.innerHTML = "";
               lastAnswer();
             }
-            console.log(trueCounts);
+            console.log(trueCounts); //test
           });
 
-          //ラストの問題回答したら正答数表示
+          //ラスト問題回答で正答数表示/ラスト以外は次の問題表示
           function lastAnswer() {
             if (i === 10) {
               title.textContent =
@@ -110,7 +130,7 @@
               homeBtn.style.display = "block";
               choiceArea.innerHTML = "";
             } else {
-              showQuestion(i);
+              QuestionInstances[i].show();
             }
           }
 
