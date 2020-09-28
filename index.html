@@ -65,7 +65,7 @@
               difficulty.textContent = this.difficultyText;
               questionText.textContent = this.text;
               const answers = [];
-              const answer = answers.push(this.dataObj.correct_answer);
+              answers.push(this.dataObj.correct_answer);
               const choiceAnswers = [
                 ...this.dataObj.incorrect_answers,
                 ...answers,
@@ -81,26 +81,25 @@
 
           //複数のインスタンス作成し配列としてまとめる
           function instances() {
-            const Questions = [];
+            const questions = [];
             for (let i = 0; i < 10; i++) {
               const instance = new Question(i);
-              Questions.push(instance);
+              questions.push(instance);
             }
-            return Questions;
+            return questions;
           }
-          const QuestionInstances = instances();
-          console.log(QuestionInstances);
+          const questionInstances = instances();
+          console.log(questionInstances);
           //開始ボタンクリックでクイズを表示
           startBtn.addEventListener("click", () => {
             title.textContent = "取得中";
             questionText.textContent = "少々お待ちください";
             window.setTimeout(function () {
-              QuestionInstances[0].show();
+              questionInstances[0].show();
             }, 1000); //１秒後にクイズ表示
           });
 
           //答え選択ボタンクリックで次のクイズを表示
-          const answerBtn = choiceArea.children;
           const trueCounts = [];
           let i = 0;
           choiceArea.addEventListener("click", (e) => {
@@ -130,7 +129,7 @@
               homeBtn.style.display = "block";
               choiceArea.innerHTML = "";
             } else {
-              QuestionInstances[i].show();
+              questionInstances[i].show();
             }
           }
 
